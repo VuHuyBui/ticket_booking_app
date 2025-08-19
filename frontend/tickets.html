@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>My Tickets</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<header>
+			<h1>My Purchases</h1>
+			<nav>
+				<button id="logout-btn" class="btn">Logout</button>
+			</nav>
+		</header>
+
+		<main>
+			<table>
+				<thead>
+					<tr>
+						<th>Event</th>
+						<th>Location</th>
+						<th>Date</th>
+						<th>Quantity</th>
+					</tr>
+				</thead>
+				<tbody id="tickets-body">
+					<!-- Filled dynamically -->
+				</tbody>
+			</table>
+		</main>
+
+		<script type="module">
+			import { fetchWithAuth, logout } from "./auth.js";
+
+			document.getElementById("logout-btn").addEventListener("click", logout);
+
+			async function loadTickets() {
+				try {
+					const token = sessionStorage.getItem("access");
+					if (!token) {
+						console.error("No token found in sessionStorage!");
+						return;
+					}
+
+					const response = await fetchWithAuth("http://localhost:8000/api/orders/")
+
+					if (!response.ok) {
+						throw new Error("Failed to fetch orders");
+					}
+
+					const data = await response.json();
+					console.log(data);
+					const tbody = document.getElementById("tickets-body");
+					tbody.innerHTML = "";
+
+					data.orders.forEach((order) => {
+						// group tickets by event
+						const eventMap = {};
+
+						order.tickets.forEach((ticket) => {
+							if (!eventMap[ticket.event]) {
+								eventMap[ticket.event] = {
+									event: ticket.event,
+									location: ticket.location,
+									date: ticket.date,
+									quantity: 0,
+								};
+							}
+							eventMap[ticket.event].quantity += 1;
+						});
+
+						Object.values(eventMap).forEach((item) => {
+							const row = `
+										<tr>
+										<td>${item.event}</td>
+										<td>${item.location}</td>
+										<td>${new Date(item.date).toLocaleDateString()}</td>
+										<td>${item.quantity}</td>
+										</tr>
+									`;
+							tbody.insertAdjacentHTML("beforeend", row);
+						});
+					});
+				} catch (err) {
+					console.error("Error loading tickets:", err);
+				}
+			}
+
+			loadTickets();
+		</script>
+	</body>
+</html>

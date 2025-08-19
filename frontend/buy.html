@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Buy Ticket</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<header>
+			<h1>Buy Ticket</h1>
+			<nav>
+				<button id="logout-btn" class="btn">Logout</button>
+			</nav>
+		</header>
+
+		<main>
+			<div class="event-details" id="event-details">
+				<p>Loading event...</p>
+			</div>
+
+			<form class="ticket-form" id="ticket-form">
+				<!-- <label for="quantity">Number of Tickets</label> -->
+				<!-- <input type="number" id="quantity" min="1" value="1" required /> -->
+				<button type="submit">Purchase</button>
+			</form>
+		</main>
+
+		<script type="module">
+			import { fetchWithAuth, logout } from "./auth.js";
+
+			document.getElementById("logout-btn").addEventListener("click", logout);
+
+			async function loadEventDetails() {
+				const token = sessionStorage.getItem("access");
+
+				if (!token) {
+					window.location.href = "login.html";
+					return;
+				}
+
+				const urlParams = new URLSearchParams(window.location.search);
+				const eventId = urlParams.get("id");
+
+				if (!eventId) {
+					document.getElementById("event-details").innerHTML =
+						"<p>Invalid event ID.</p>";
+					return;
+				}
+
+				try {
+					const res = await fetchWithAuth(`http://127.0.0.1:8000/api/events/${eventId}/`)
+
+					if (!res.ok) throw new Error("Failed to fetch event");
+
+					const event = await res.json();
+
+					document.getElementById("event-details").innerHTML = `
+        <h2>${event.title}</h2>
+        <p><strong>Location:</strong> ${event.location}</p>
+        <p><strong>Opening Date:</strong> ${event.open_date}</p>
+        <p><strong>Closing Date:</strong> ${event.close_date}</p>
+        <p><strong>Remaining Tickets:</strong> ${
+			event.max_quantity - event.ticket_count
+		}</p>
+      `;
+				} catch (error) {
+					console.error(error);
+					document.getElementById("event-details").innerHTML =
+						"<p>Failed to load event.</p>";
+				}
+			}
+
+			document
+				.getElementById("ticket-form")
+				.addEventListener("submit", async (e) => {
+					e.preventDefault();
+
+					const token = sessionStorage.getItem("access");
+					if (!token) {
+						window.location.href = "login.html";
+						return;
+					}
+
+					const eventId = new URLSearchParams(
+						window.location.search
+					).get("id");
+
+					try {
+						const res = await fetch(
+							"http://127.0.0.1:8000/api/ticket/",
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+									Authorization: `Bearer ${token}`,
+								},
+								body: JSON.stringify({ event: eventId }),
+							}
+						);
+
+						if (!res.ok) {
+							const errData = await res.json();
+							alert(
+								`Failed to purchase ticket: ${
+									errData.detail || "Unknown error"
+								}`
+							);
+							return;
+						}
+
+						alert("Ticket purchased successfully!");
+						loadEventDetails(); // refresh remaining tickets
+					} catch (error) {
+						console.error(error);
+						alert("Something went wrong. Please try again.");
+					}
+				});
+
+			loadEventDetails();
+		</script>
+	</body>
+</html>

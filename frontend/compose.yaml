@@ -1,0 +1,8 @@
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    container_name: html-app
+    volumes:
+      - ./:/usr/share/nginx/html  # remove ":ro" and map to your html folder

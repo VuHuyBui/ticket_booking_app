@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Ticket Booking App</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<header>
+			<h1>🏅 Sports Event Ticketing</h1>
+			<nav>
+				<a href="tickets.html">My Tickets</a>
+				<button id="logout-btn" class="btn">Logout</button>
+			</nav>
+		</header>
+
+		<main>
+			<h2>Upcoming Events</h2>
+			<div id="event-list" class="event-list">
+				<!-- Events will be loaded here -->
+			</div>
+		</main>
+
+		<footer>
+			<p>&copy; 2025 Sports Ticketing App</p>
+		</footer>
+
+		<script type="module">
+			import { fetchWithAuth, logout } from "./auth.js";
+
+			// Attach logout handler
+			document.getElementById("logout-btn").addEventListener("click", logout);
+
+			// ✅ Load events
+			async function loadEvents() {
+				const token = sessionStorage.getItem("access");
+				console.log(token);
+
+				if (!token) {
+					window.location.href = "login.html";
+					return;
+				}
+
+				const eventList = document.getElementById("event-list");
+				eventList.innerHTML = "<p>Loading events...</p>";
+
+				try {
+					const res = await fetchWithAuth("http://127.0.0.1:8000/api/events");
+
+					if (!res.ok) throw new Error("Failed to fetch events");
+
+					const events = await res.json();
+					eventList.innerHTML = ""; // Clear loading text
+
+					if (!events.length) {
+						eventList.innerHTML = "<p>No upcoming events.</p>";
+						return;
+					}
+
+					events.forEach((event) => {
+						const card = document.createElement("div");
+						card.classList.add("event-card");
+
+						card.innerHTML = `
+							<h3>${event.title}</h3>
+							<p><strong>Location:</strong> ${event.location}</p>
+							<p><strong>Opening Date:</strong> ${event.open_date}</p>
+							<p><strong>Closing Date:</strong> ${event.close_date}</p>
+							<p><strong>Remaining Ticket:</strong> ${
+								event.max_quantity - event.ticket_count
+							}</p>
+							<a href="buy.html?id=${event.id}" class="btn">Buy Ticket</a>
+						`;
+
+						eventList.appendChild(card);
+					});
+				} catch (err) {
+					console.error("Error loading events:", err);
+					eventList.innerHTML =
+						"<p>Failed to load events. Please try again later.</p>";
+				}
+			}
+
+			// Load events on page load
+			loadEvents();
+		</script>
+	</body>
+</html>
