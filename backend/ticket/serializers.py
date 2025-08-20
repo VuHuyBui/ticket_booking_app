@@ -1,8 +1,11 @@
 from rest_framework import serializers
 from .models import Event, Ticket, Order
+from django.db.models import F
+
+# from utils.redis import get_key
 
 class EventSerializer(serializers.ModelSerializer):
-    ticket_count = serializers.IntegerField()
+    # ticket_count = serializers.IntegerField()
 
     class Meta:
         model = Event
@@ -55,7 +58,7 @@ class TicketOrderSerializer(serializers.Serializer):
             price=event.ticket_price,
             order=order,
         )
-
         
+        Event.objects.filter(id=event.id).update(ticket_count=F("ticket_count") + 1)
 
         return {"ticket": ticket, "order": order}

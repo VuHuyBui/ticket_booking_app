@@ -17,16 +17,16 @@ class EventGetView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        events = Event.objects.annotate(ticket_count=Count('ticket'))
+        events = Event.objects.all()
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
 class EventGetSingleView(APIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     
     def get(self, request, pk):
-        events = Event.objects.annotate(ticket_count=Count('ticket')).get(pk=pk)
+        events = Event.objects.get(pk=pk)
         serializer = EventSerializer(events)
         return Response(serializer.data, status=status.HTTP_200_OK)
         

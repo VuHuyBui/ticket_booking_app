@@ -13,6 +13,7 @@ class Event(models.Model):
     close_date = models.DateTimeField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
     max_quantity = models.PositiveIntegerField(default=0)
+    ticket_count = models.IntegerField(default=0)
     ticket_price = models.DecimalField(default=0.0, max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
