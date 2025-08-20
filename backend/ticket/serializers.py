@@ -40,13 +40,6 @@ class TicketOrderSerializer(serializers.Serializer):
         except Event.DoesNotExist:
             raise serializers.ValidationError({"event_id": "Event not found."})
 
-        # Create ticket
-        ticket = Ticket.objects.create(
-            event=event,
-            customer_id=user,
-            price=event.ticket_price,
-        )
-
         # Create order
         order = Order.objects.create(
             user=user,
@@ -54,5 +47,15 @@ class TicketOrderSerializer(serializers.Serializer):
             unit_price=event.ticket_price,
             status="paid",
         )
+        
+        # Create ticket
+        ticket = Ticket.objects.create(
+            event=event,
+            customer_id=user,
+            price=event.ticket_price,
+            order=order,
+        )
+
+        
 
         return {"ticket": ticket, "order": order}

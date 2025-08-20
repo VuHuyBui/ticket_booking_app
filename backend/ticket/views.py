@@ -36,10 +36,8 @@ class TicketPostView(APIView):
     
     def post(self, request):
         serializer = TicketOrderSerializer(data=request.data, context={"request": request})
-        print("HIHIHIHIIHIHIHIHIH1")
         
         if serializer.is_valid():
-            print("HIHIHIHIIHIHIHIHIH2")
             
             result = serializer.save()
             return Response(
