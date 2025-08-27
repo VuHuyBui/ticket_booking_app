@@ -29,7 +29,9 @@
 		<script type="module">
 			import { fetchWithAuth, logout } from "./auth.js";
 
-			document.getElementById("logout-btn").addEventListener("click", logout);
+			document
+				.getElementById("logout-btn")
+				.addEventListener("click", logout);
 
 			async function loadEventDetails() {
 				const token = sessionStorage.getItem("access");
@@ -49,7 +51,9 @@
 				}
 
 				try {
-					const res = await fetchWithAuth(`http://127.0.0.1:8000/api/events/${eventId}/`)
+					const res = await fetchWithAuth(
+						`http://127.0.0.1:8000/api/events/${eventId}/`
+					);
 
 					if (!res.ok) throw new Error("Failed to fetch event");
 
@@ -110,7 +114,8 @@
 						}
 
 						alert("Ticket purchased successfully!");
-						loadEventDetails(); // refresh remaining tickets
+						// redirect after success
+						window.location.replace("events.html");
 					} catch (error) {
 						console.error(error);
 						alert("Something went wrong. Please try again.");

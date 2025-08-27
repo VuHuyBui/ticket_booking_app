@@ -1,38 +1,42 @@
-import redis
-import logging
-from django.conf import settings
-import hashlib
+import json
+from django_redis import get_redis_connection
 
-r = redis.Redis(
-    host="127.0.0.1",
-    port=6379,
-    decode_responses=True,
-    socket_timeout=5,     # avoid hanging
-    socket_connect_timeout=5
-)
+def get_or_set_cache(key, callback, timeout=300):
+    
+    redis_conn = get_redis_connection("default")
 
-logger = logging.getLogger(__name__)
+    cached_value = redis_conn.get(key)
+    if cached_value:
+        return json.loads(cached_value)
 
-def make_cache_key(prefix: str, identifier: str) -> str:
-    """
-    Generate a safe cache key, e.g. "response:somehash"
-    """
-    return f"{prefix}:{hashlib.md5(identifier.encode()).hexdigest()}"
+    # Compute fresh value
+    value = callback()
 
-def get_key(key, value=None):
-    try:
-        if not r.exists(key) and value is not None:
-            r.setnx(key, value)
-        return r.get(key)
-    except redis.exceptions.RedisError as e:
-        logger.error(f"Redis error while getting key {key}: {e}")
-        return None   # or some default fallback
+    # Save to Redis
+    redis_conn.set(key, json.dumps(value), ex=timeout)
+    return value
 
+class MyRedis:
+    def __init__(self):
+        self.redis_conn = get_redis_connection("default")
+        
+    def get(self, key):
+        cached_value = self.redis_conn.get(key)
+        if cached_value:
+            return json.loads(cached_value)
+        
+    
+    def set(self, key, value, timeout=300):
+        self.redis_conn.set(key, json.dumps(value), ex=timeout)
+        return value
+    
+    def incr(self, key, amount=1):
+        self.redis_conn.incr(key, amount)
+    
+    def decr(self, key, amount):
+        self.redis_conn.decr(key, amount)
+        
+    
+myredis = MyRedis()
 
-def set_key(key, value):
-    try:
-        r.set(key, value)
-        return True
-    except redis.exceptions.RedisError as e:
-        logger.error(f"Redis error while setting key {key}: {e}")
-        return False
+        

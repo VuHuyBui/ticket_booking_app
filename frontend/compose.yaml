@@ -1,8 +1,13 @@
 services:
-  web:
-    image: nginx:alpine
-    ports:
-      - "8080:80"
-    container_name: html-app
-    volumes:
-      - ./:/usr/share/nginx/html  # remove ":ro" and map to your html folder
+    web:
+        image: nginx:alpine
+        ports:
+            - "8080:80"
+        container_name: html-app
+        volumes:
+            - ./:/usr/share/nginx/html # remove ":ro" and map to your html folder
+        develop:
+            watch:
+                - action: sync
+                  path: .
+                  target: /app

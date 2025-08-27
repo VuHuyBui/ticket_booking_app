@@ -1,0 +1,15 @@
+{
+	"steps": [
+		{
+			"id": 2,
+			"url": "http://127.0.0.1:8000/api/ticket/",
+			"protocol": "http",
+			"method": "POST",
+			"headers": {
+				"Content-Type": "application/json",
+				"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU2Mjg3MDU0LCJpYXQiOjE3NTYyODY0NTR9.Yr8TlsIJap1F0HS5rngvQ6G6CT8jxJOzoRA3da-Gz7U"
+			},
+			"payload": "{\"event\": 1}"
+		}
+	]
+}

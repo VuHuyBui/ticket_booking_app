@@ -162,9 +162,11 @@ CORS_ALLOW_CREDENTIALS = True  # allow cookies to be sent
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": f"redis://{os.environ.get("REDIS_HOST")}//127.0.0.1:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": os.environ.get("REDIS_PASSWORD"),
+            
         }
     }
 }
